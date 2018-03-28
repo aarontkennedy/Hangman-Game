@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Hangman</title>
+
+</head>
+<body>
+    <header>
+        <h1>Hangman</h1>
+    </header>
+
+    <section>
+        <div id="wordLocation">
+            <span id="blankLetter">_</span>
+            <span id="blankLetter">_</span>
+            <span id="blankLetter">_</span>
+            <span id="blankLetter">_</span>
+            <span id="blankLetter">_</span>
+            <span id="blankLetter">_</span>
+        </div>
+        <div id="imageLocation"></div>
+    </section>
+
+    <aside>
+        <h2>Press any letter to start guessing!</h2>
+        <h3>Wins: <span id="numWins">0</span></h3>
+        <h3>Losses: <span id="numLosses">0</span></h3>
+        <h3>Number of Guesses Remaining: <span id="numGuessesLeft">9</span></h3>
+        <h3>Letters Guessed: <span id="lettersGuessed"></span></h3>
+
+
+    </aside>
+
+    <footer>
+        <p>Hangman</p>
+    </footer>
+    
+    <script   src="https://code.jquery.com/jquery-3.3.1.slim.min.js"   integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="   crossorigin="anonymous"></script>
+
+    <script   src="assets/javascript/game.js"></script>
+
+    
+</body>
+</html>
