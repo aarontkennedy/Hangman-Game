@@ -1,6 +1,7 @@
+
 h1 {
     text-align: center;
-    font-size: 500%;
+    font-size: 800%;
     font-weight: bolder;
 }
 
@@ -22,9 +23,31 @@ img {
 
 #wordLocation {
     text-align:center;
+    white-space: nowrap;
 }
 
 #wordLocation span {
+	font-family: monospace;
     font-size: 500%;
     font-weight: bolder;
+    margin-right: .2em;
 }
+
+@media only screen and (max-width: 800px) {
+    h1 {
+        font-size: 500%;
+    }
+    #wordLocation span {
+        font-size: 400%;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    h1 {
+        font-size: 400%;
+    }
+    #wordLocation span {
+        font-size: 250%;
+    }
+}
+

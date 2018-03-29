@@ -71,10 +71,10 @@ $(document).ready(function () {
         
     PuzzleLetter.prototype.print = function(){
         if (this.isSolved) {
-            $("#wordLocation").append("<span>"+ this.character +" </span>");
+            $("#wordLocation").append("<span>"+ this.character +"</span>");
         }
         else {
-            $("#wordLocation").append("<span>_ </span>");
+            $("#wordLocation").append("<span>_</span>");
         }
     };
 
