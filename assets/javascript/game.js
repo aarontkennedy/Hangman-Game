@@ -81,7 +81,13 @@ $(document).ready(function () {
 
     // this is the over all game object that pulls all the pieces together
     function HangmanGame (puzzleString) {
+        //console.log(puzzleString);
         this.winsNLosses = new PlayerInfo();
+        this.reset(puzzleString);
+
+    }
+
+    HangmanGame.prototype.reset = function (puzzleString) {
         this.guessingStats = new Guesses(9);
         this.puzzle = puzzleString;
         this.puzzleLetters = [];
@@ -89,7 +95,8 @@ $(document).ready(function () {
         for(var i = 0; i < this.puzzle.length; i++) {
             this.puzzleLetters.push(new PuzzleLetter(this.puzzle[i]));
         }
-    }
+        this.print();
+    };
 
     HangmanGame.prototype.print = function() {
         // first clear the existing stuff that was already printed
@@ -104,17 +111,43 @@ $(document).ready(function () {
         if (!this.guessingStats.isLetterChosenAlready(c)) {
             var correctGuess = false;
             for(var i = 0; i < this.puzzle.length; i++) {
-                correctGuess = correctGuess || this.puzzleLetters[i].handleGuess(c);
+                correctGuess = this.puzzleLetters[i].handleGuess(c) || correctGuess;
             }
             if (!correctGuess) {
                 this.guessingStats.decrementGuesses();
             }
             this.print();
         }
-    }
+    };
+    HangmanGame.prototype.hasWon = function () {
+        console.log("starting to check if hasWon");
+        var result = true;
+        for(var i = 0; i < this.puzzleLetters.length; i++) {
+            console.log(this.puzzleLetters[i] + ": " + this.puzzleLetters[i].isSolved);
+            result = this.puzzleLetters[i].isSolved && result;
+        }
+        return result;
+    };
+    HangmanGame.prototype.hasLost = function () {
+        if (this.guessingStats.numBadGuesses < 1) {
+            return true;
+        }
+        return false;
+    };
+    HangmanGame.prototype.gameCompleted = function () {
+        if (this.hasLost()) {
+            this.winsNLosses.incrementLosses();
+            return true;
+        }
+        else if (this.hasWon()) {
+            this.winsNLosses.incrementWins();
+            return true;
+        }
+        return false;
+    };
 
     var game = new HangmanGame (puzzles[Math.floor(Math.random()*puzzles.length)]);
-    game.print();
+
 
 
     $(document).keyup(function (event) {
@@ -123,6 +156,11 @@ $(document).ready(function () {
         if (charTyped.length == 1 && /[a-z]/i.test(charTyped)) {
             //console.log(charTyped + " pressed - play the game");
             game.guessed(charTyped);
+            
+            if (game.gameCompleted()) {
+                alert("game over!")
+                game.reset(puzzles[Math.floor(Math.random()*puzzles.length)]);
+            }
         }
         else {
             //console.log(charTyped + " pressed - not a letter");
