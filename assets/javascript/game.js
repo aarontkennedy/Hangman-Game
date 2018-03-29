@@ -50,7 +50,7 @@ $(document).ready(function () {
     Guesses.prototype.isLetterChosenAlready = function(letter) {
         if (this.lettersGuessed.indexOf(letter) == -1) {
             // the letter is not found - add to list
-            this.lettersGuessed += letter;
+            this.lettersGuessed += " " + letter;
             // update the letters guessed to the screen
             $("#lettersGuessed").text(this.lettersGuessed);
             return false;  // return false, wasn't chosen already
@@ -88,10 +88,33 @@ $(document).ready(function () {
     
 
 
+    // this object will handle the updating of the scaffold image
+    function ScaffoldImage () {
+        this.imgPath = "assets/images/";
+        this.total = 8; 
+        this.reset();
+    }
+
+    ScaffoldImage.prototype.reset = function () {
+        this.current = 0;
+        this.changePicture();
+    };
+
+    ScaffoldImage.prototype.changePicture = function () {
+        $("#scaffold").attr('src', this.imgPath + 'hangman' + this.current + '.jpg');
+    };
+
+    ScaffoldImage.prototype.nextPicture = function () {
+        this.current++;
+        this.changePicture();
+    };
+
+
     // this is the over all game object that pulls all the pieces together
     function HangmanGame () {
         this.gamePuzzles = new Puzzles();  // only create once, no need to reset
         this.winsNLosses = new PlayerInfo(); // create once, don't reset and lose info
+
         this.reset();
 
     }
@@ -99,7 +122,8 @@ $(document).ready(function () {
     // handles the rest of the initialization,
     // also resets variables at the end of a game for a new game
     HangmanGame.prototype.reset = function () {
-        this.guessingStats = new Guesses(9);
+        this.gameImages = new ScaffoldImage();
+        this.guessingStats = new Guesses(this.gameImages.total);
         this.puzzle = this.gamePuzzles.getRandom();
         this.puzzleLetters = [];
 
@@ -132,6 +156,7 @@ $(document).ready(function () {
             // if the letter isn't in the puzzle, punish them
             if (!correctGuess) {
                 this.guessingStats.decrementGuesses();
+                this.gameImages.nextPicture();
             }
             else { // if they were correct, then update the html
                 this.print(); 
