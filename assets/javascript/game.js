@@ -1,12 +1,20 @@
 $(document).ready(function () {
 
-    var puzzles = [
-        "cat",
-        "chicken",
-        "elephant",
-        "butterfly",
-        "hippopotamus"
-    ];
+    // a puzzle object, essentially an array with the ability to return a 
+    // random member of the list
+    function Puzzles() {
+        this.words = ["cat",
+                      "chicken",
+                      "elephant",
+                      "butterfly",
+                      "hippopotamus"];
+    }
+
+    Puzzles.prototype.getRandom = function () {
+        return this.words[Math.floor(Math.random()*this.words.length)];
+    };
+    
+
 
     // playerInfo object will keep track of wins, losses, and printing them
     function PlayerInfo() {
@@ -23,6 +31,7 @@ $(document).ready(function () {
         this.numLosses++;
         $("#numLosses").text(this.numLosses);
     };
+
 
 
     // Guesses will take care of the number of guesses and keeping track of letters
@@ -51,6 +60,7 @@ $(document).ready(function () {
     };
 
 
+
     // this class will take care of each letter in the puzzle
     // much easier to have each letter to be responsible for 
     // whether or not it is solved and how it should be printed
@@ -71,25 +81,26 @@ $(document).ready(function () {
     PuzzleLetter.prototype.handleGuess = function(guess) {
         if (guess == this.character) {
             this.isSolved = true;
-            this.print();
             return true;
         }
-        this.print();
         return false;
     };
     
 
+
     // this is the over all game object that pulls all the pieces together
-    function HangmanGame (puzzleString) {
-        //console.log(puzzleString);
-        this.winsNLosses = new PlayerInfo();
-        this.reset(puzzleString);
+    function HangmanGame () {
+        this.gamePuzzles = new Puzzles();  // only create once, no need to reset
+        this.winsNLosses = new PlayerInfo(); // create once, don't reset and lose info
+        this.reset();
 
     }
 
-    HangmanGame.prototype.reset = function (puzzleString) {
+    // handles the rest of the initialization,
+    // also resets variables at the end of a game for a new game
+    HangmanGame.prototype.reset = function () {
         this.guessingStats = new Guesses(9);
-        this.puzzle = puzzleString;
+        this.puzzle = this.gamePuzzles.getRandom();
         this.puzzleLetters = [];
 
         for(var i = 0; i < this.puzzle.length; i++) {
@@ -98,6 +109,8 @@ $(document).ready(function () {
         this.print();
     };
 
+    // handles updating of the puzzle in the html, clears and
+    // calls each letter to print itself
     HangmanGame.prototype.print = function() {
         // first clear the existing stuff that was already printed
         $("#wordLocation").html("");
@@ -107,33 +120,50 @@ $(document).ready(function () {
         }
     };    
 
+    // handles the guessing
     HangmanGame.prototype.guessed = function (c) {
         if (!this.guessingStats.isLetterChosenAlready(c)) {
             var correctGuess = false;
+            // ask each letter if they match the guess
             for(var i = 0; i < this.puzzle.length; i++) {
+                // it was a correct guess if even one was correct - use OR
                 correctGuess = this.puzzleLetters[i].handleGuess(c) || correctGuess;
             }
+            // if the letter isn't in the puzzle, punish them
             if (!correctGuess) {
                 this.guessingStats.decrementGuesses();
             }
-            this.print();
+            else { // if they were correct, then update the html
+                this.print(); 
+            }
         }
     };
+
+    // this is probably a terribly inefficient method to determine if they 
+    // have won, but it works and the for loops are limited in length
+    // to the short length of the puzzle words
     HangmanGame.prototype.hasWon = function () {
-        console.log("starting to check if hasWon");
         var result = true;
+        // ANDing together the return values from isSolved on each letter
+        // if they are all true then AND is true, if even one is false,
+        // then the result is false and they haven't won
         for(var i = 0; i < this.puzzleLetters.length; i++) {
-            console.log(this.puzzleLetters[i] + ": " + this.puzzleLetters[i].isSolved);
             result = this.puzzleLetters[i].isSolved && result;
         }
         return result;
     };
+
+    // much easier to determine if they have lost, check the number of
+    // available guesses
     HangmanGame.prototype.hasLost = function () {
         if (this.guessingStats.numBadGuesses < 1) {
             return true;
         }
         return false;
     };
+
+    // this method checks if they have won or lost
+    // also updates the screen if they have won or lost
     HangmanGame.prototype.gameCompleted = function () {
         if (this.hasLost()) {
             this.winsNLosses.incrementLosses();
@@ -146,26 +176,33 @@ $(document).ready(function () {
         return false;
     };
 
-    var game = new HangmanGame (puzzles[Math.floor(Math.random()*puzzles.length)]);
+    var game = new HangmanGame ();
 
 
 
     $(document).keyup(function (event) {
-        var charTyped = event.key.toLowerCase();
+        // check they aren't being silly and using shift or caps lock
+        var charTyped = event.key.toLowerCase();  
         
+        // is it a letter
         if (charTyped.length == 1 && /[a-z]/i.test(charTyped)) {
             //console.log(charTyped + " pressed - play the game");
             game.guessed(charTyped);
             
             if (game.gameCompleted()) {
-                alert("game over!")
-                game.reset(puzzles[Math.floor(Math.random()*puzzles.length)]);
+                if (game.hasLost()) {
+                    alert("Game Over! " + "It was "+ game.puzzle + ".");
+                }
+                else {
+                    alert("Congratulations! " + "It was "+ game.puzzle + ".");
+                }
+                game.reset();
             }
         }
-        else {
+        else { // else not a letter
             //console.log(charTyped + " pressed - not a letter");
         }
-        // else not a letter
+        
     });
 
 });
