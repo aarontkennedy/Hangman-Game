@@ -3,11 +3,30 @@ $(document).ready(function () {
     // a puzzle object, essentially an array with the ability to return a 
     // random member of the list
     function Puzzles() {
-        this.words = ["cat",
-                      "chicken",
-                      "elephant",
-                      "butterfly",
-                      "hippopotamus"];
+        this.words = ["gallows",
+                      "scaffold",
+                      "execution",
+                      "hangman",
+                      "rope",
+                      "justice",
+                      "crime",
+                      "hanging",
+                      "drop",
+                      "criminal",
+                      "neck",
+                      "asphyxiation",
+                      "punishment",
+                      "strangulation",
+                      "capital",
+                      "felon",
+                      "death",
+                      "trapdoor",
+                      "snapped",
+                      "decapitation",
+                      "slack",
+                      "noose",
+                      "tighten",
+                      "pole"];
     }
 
     Puzzles.prototype.getRandom = function () {
@@ -110,6 +129,27 @@ $(document).ready(function () {
     };
 
 
+    
+    // this object will play some gallows music depending on if you
+    // win or lose
+    function GallowsMusic () {
+        this.audioTag = document.createElement('audio');
+        this.audioTag.volume = 0.4;
+    }
+
+    GallowsMusic.prototype.playSuccess = function () {
+        this.audioTag.pause();
+        this.audioTag.src = "assets/gallowsPole.mp3";
+        this.audioTag.play();
+    };
+    GallowsMusic.prototype.playFailure = function () {
+        this.audioTag.pause();
+        this.audioTag.src = "assets/tomDula.mp3";
+        this.audioTag.play();
+    };
+
+
+
 
     // this object will handle the send of alert style
     // messages to the user when they win or lose
@@ -142,8 +182,11 @@ $(document).ready(function () {
 
     // this is the over all game object that pulls all the pieces together
     function HangmanGame () {
+        this.music = new GallowsMusic ();
         this.gamePuzzles = new Puzzles();  // only create once, no need to reset
         this.winsNLosses = new PlayerInfo(); // create once, don't reset and lose info
+        this.alerts = new AlertMessage();
+        this.gameImages = new ScaffoldImage();
 
         this.reset();
 
@@ -152,9 +195,8 @@ $(document).ready(function () {
     // handles the rest of the initialization,
     // also resets variables at the end of a game for a new game
     HangmanGame.prototype.reset = function () {
-        this.gameImages = new ScaffoldImage();
         this.guessingStats = new Guesses(this.gameImages.total);
-        this.alerts = new AlertMessage();
+        this.gameImages.reset();
         this.puzzle = this.gamePuzzles.getRandom();
         this.puzzleLetters = [];
 
@@ -227,11 +269,13 @@ $(document).ready(function () {
     };
 
     HangmanGame.prototype.handleWin = function () {
+        this.music.playSuccess();
         this.winsNLosses.incrementWins();
         this.alerts.winningMessage(game.puzzle, game.reset);
 
     }
     HangmanGame.prototype.handleLoss = function () {
+        this.music.playFailure();
         this.winsNLosses.incrementLosses();
         this.alerts.losingMessage(game.puzzle, game.reset);
 
