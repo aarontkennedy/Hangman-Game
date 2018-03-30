@@ -110,6 +110,36 @@ $(document).ready(function () {
     };
 
 
+
+    // this object will handle the send of alert style
+    // messages to the user when they win or lose
+    function AlertMessage () {
+        this.alertElement = $("#myModal");
+        this.messageTitle = $(".modal-title");;
+        this.messageElement = $(".modal-body p");
+        //this.alertElement.hide();   
+    }
+
+    AlertMessage.prototype.winningMessage = function(solution, callback) {
+        this.messageElement.text("It was " + solution + ".");
+        this.messageTitle.text("Congratulations!");
+        this.alertElement.modal();
+        this.alertElement.on('hidden.bs.modal', function (e) {
+            game.reset();
+        });
+    };
+
+    AlertMessage.prototype.losingMessage = function(solution, callback) {
+        this.messageElement.text("It was " + solution + ".");
+        this.messageTitle.text("Sorry!");
+        this.alertElement.modal();  
+        this.alertElement.on('hidden.bs.modal', function (e) {
+            game.reset();
+        });   
+    };
+
+
+
     // this is the over all game object that pulls all the pieces together
     function HangmanGame () {
         this.gamePuzzles = new Puzzles();  // only create once, no need to reset
@@ -124,6 +154,7 @@ $(document).ready(function () {
     HangmanGame.prototype.reset = function () {
         this.gameImages = new ScaffoldImage();
         this.guessingStats = new Guesses(this.gameImages.total);
+        this.alerts = new AlertMessage();
         this.puzzle = this.gamePuzzles.getRandom();
         this.puzzleLetters = [];
 
@@ -188,18 +219,23 @@ $(document).ready(function () {
     };
 
     // this method checks if they have won or lost
-    // also updates the screen if they have won or lost
     HangmanGame.prototype.gameCompleted = function () {
-        if (this.hasLost()) {
-            this.winsNLosses.incrementLosses();
-            return true;
-        }
-        else if (this.hasWon()) {
-            this.winsNLosses.incrementWins();
+        if (this.hasLost() || this.hasWon()) {
             return true;
         }
         return false;
     };
+
+    HangmanGame.prototype.handleWin = function () {
+        this.winsNLosses.incrementWins();
+        this.alerts.winningMessage(game.puzzle, game.reset);
+
+    }
+    HangmanGame.prototype.handleLoss = function () {
+        this.winsNLosses.incrementLosses();
+        this.alerts.losingMessage(game.puzzle, game.reset);
+
+    }
 
     var game = new HangmanGame ();
 
@@ -210,19 +246,19 @@ $(document).ready(function () {
         var charTyped = event.key.toLowerCase();  
         
         // is it a letter
-        if (charTyped.length == 1 && /[a-z]/i.test(charTyped)) {
+        if (charTyped.length == 1 && /[a-z]/i.test(charTyped) && !game.gameCompleted()) {
             //console.log(charTyped + " pressed - play the game");
             game.guessed(charTyped);
-            
+
             if (game.gameCompleted()) {
+
                 if (game.hasLost()) {
-                    alert("Game Over! " + "It was "+ game.puzzle + ".");
+                    game.handleLoss();
                 }
                 else {
-                    alert("Congratulations! " + "It was "+ game.puzzle + ".");
+                    game.handleWin();
                 }
-                game.reset();
-            }
+            }        
         }
         else { // else not a letter
             //console.log(charTyped + " pressed - not a letter");
