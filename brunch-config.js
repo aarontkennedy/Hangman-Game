@@ -16,8 +16,8 @@ exports.files = {
   },
   stylesheets: {
     joinTo: {
-      "vendor.css": /^(?!css)/,
-      "app.css": /^css/
+      "vendor.css": /^(?!app)/,
+      "app.css": /^app/
     }
   }
 };
